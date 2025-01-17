@@ -31,8 +31,7 @@ contains
     
     delimcount = 0
     count = 0
-    ! allocate(delimpos(delimcount))
-
+    
     length = len_trim(str)
     !print *, "stringmod: length: ", length, " str:", str
 
