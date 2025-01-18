@@ -3,7 +3,8 @@ module stringmodlib
   implicit none
   private
 
-  public :: string_to_int_array
+  public :: string_to_int_array, resize_array, &
+            cr, newline, esc, NULL
 
   !> Predefined delimiters for internal use
   character (len=1), parameter :: tabdelim      = char(9)
@@ -18,6 +19,12 @@ module stringmodlib
   character (len=1), parameter :: cr          = char(13)
   character (len=1), parameter :: esc         = char(27)
   character (len=1), parameter :: NULL        = char(0)
+
+  !> Resize Array interface
+  interface resize_array 
+    module procedure    resize_int_array, &
+                        resize_string_array
+  end interface
 contains
 
   !> This is a rewrite of the above and a more complex splitting that used multiple delimiters
@@ -72,6 +79,66 @@ contains
         end do
     end if
   end function string_to_int_array
+
+  !> Subroutine to resize the source array to a new size
+  subroutine resize_int_array(array, newsize)
+    integer, allocatable    :: array(:)
+    integer, intent(in)     :: newsize
+    integer, allocatable    :: temp(:)
+    integer                 :: sizea, sizeb
+
+    sizea = 0
+    sizeb = 0
+
+    allocate(temp(newsize))
+    
+    if (allocated(array)) then
+      sizea = size(temp)
+      sizeb = size(array)
+      if (sizea .ge. sizeb) then
+        temp(1:size(array)) = array
+        deallocate(array)
+      else
+        print "(A)", "*** ARRAY SIZE MISMATCH *** "
+        print "(A, I10)", "Current:", sizeb
+        print "(A, I10)", "New:    ", sizea
+        call exit
+      end if
+    end if
+    array = temp
+
+    deallocate(temp)
+  end subroutine resize_int_array
+
+  !> Subroutine to resize the source array to a new size
+  subroutine resize_string_array(array, newsize)
+    character(len=*), allocatable   :: array(:)
+    integer, intent(in)             :: newsize
+    character(len=256), allocatable :: temp(:)
+    integer                         :: sizea, sizeb
+
+    sizea = 0
+    sizeb = 0
+
+    allocate(temp(newsize))
+
+    if (allocated(array)) then
+        sizea = size(temp)
+        sizeb = size(array)
+        if (sizea .ge. sizeb) then                          !  Realistically this should be .gt. but by 
+          temp(1:size(array)) = array                       !  using .ge. we can use this subroutine to
+          deallocate(array)                                 !  to copy also not that this is of any real
+        else                                                !  benefit.
+          print "(A)", "*** ARRAY SIZE MISMATCH *** "
+          print "(A, I10)", "Current:", sizeb
+          print "(A, I10)", "New:    ", sizea
+          call exit 
+        end if
+    end if
+    array = temp
+
+    deallocate(temp)
+end subroutine resize_string_array
 
   !> Converts a string to an integer otherwise return a wildly absurd negative number.
   !> Unless that is what they are looking for - oops!
