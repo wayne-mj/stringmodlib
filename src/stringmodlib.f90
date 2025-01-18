@@ -138,7 +138,7 @@ contains
     array = temp
 
     deallocate(temp)
-end subroutine resize_string_array
+  end subroutine resize_string_array
 
   !> Converts a string to an integer otherwise return a wildly absurd negative number.
   !> Unless that is what they are looking for - oops!
