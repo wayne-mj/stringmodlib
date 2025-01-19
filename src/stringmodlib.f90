@@ -5,6 +5,7 @@ module stringmodlib
 
   public :: string_to_int_array, resize_array, &
             cr, newline, esc, NULL
+            
 
   !> Predefined delimiters for internal use
   character (len=1), parameter :: tabdelim      = char(9)
@@ -111,34 +112,38 @@ contains
   end subroutine resize_int_array
 
   !> Subroutine to resize the source array to a new size
-  subroutine resize_string_array(array, newsize)
-    character(len=*), allocatable   :: array(:)
-    integer, intent(in)             :: newsize
-    character(len=256), allocatable :: temp(:)
-    integer                         :: sizea, sizeb
+  !> while outputing to a new array
+  subroutine resize_string_array(array,newarray,newsize)
+    character(*), allocatable  :: array (:)
+    character(*), allocatable  :: newarray (:)
+    integer, intent(in)        :: newsize
+    integer                    :: sizea, sizeb
 
     sizea = 0
     sizeb = 0
 
-    allocate(temp(newsize))
+    if (.not. allocated(newarray)) then
+      allocate(newarray(newsize))
+    else
+      print '(A)', "*** Cannot copy back onto existing array ***"
+      call exit
+    end if
 
     if (allocated(array)) then
-        sizea = size(temp)
-        sizeb = size(array)
-        if (sizea .ge. sizeb) then                          !  Realistically this should be .gt. but by 
-          temp(1:size(array)) = array                       !  using .ge. we can use this subroutine to
-          deallocate(array)                                 !  to copy also not that this is of any real
-        else                                                !  benefit.
-          print "(A)", "*** ARRAY SIZE MISMATCH *** "
-          print "(A, I10)", "Current:", sizeb
-          print "(A, I10)", "New:    ", sizea
-          call exit 
-        end if
+      sizea = size(array)
+      sizeb = size(newarray)
+      if (sizeb .ge. sizea) then
+        newarray(1:sizea) = array
+        deallocate(array)
+      else
+        print "(A)", "*** ARRAY SIZE MISMATCH *** "
+        print "(A, I10)", "Current:", sizeb
+        print "(A, I10)", "New:    ", sizea
+        call exit
+      end if
     end if
-    array = temp
 
-    deallocate(temp)
-  end subroutine resize_string_array
+  end subroutine
 
   !> Converts a string to an integer otherwise return a wildly absurd negative number.
   !> Unless that is what they are looking for - oops!
