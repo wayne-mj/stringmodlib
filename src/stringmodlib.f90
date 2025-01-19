@@ -4,22 +4,26 @@ module stringmodlib
   private
 
   public :: string_to_int_array, resize_array, &
+            string_to_integer32, string_to_integer64, &
             cr, newline, esc, NULL
             
 
   !> Predefined delimiters for internal use
-  character (len=1), parameter :: tabdelim      = char(9)
-  character (len=1), parameter :: spacedelim    = ' '
-  character (len=1), parameter :: commadelim    = ','
-  character (len=1), parameter :: colondelim    = ":"
-  character (len=1), parameter :: pipedelim     = "|"
-  character (len=1), parameter :: perioddelim   = "."
+  character (len=1), parameter  :: tabdelim      = char(9)
+  character (len=1), parameter  :: spacedelim    = ' '
+  character (len=1), parameter  :: commadelim    = ','
+  character (len=1), parameter  :: colondelim    = ":"
+  character (len=1), parameter  :: pipedelim     = "|"
+  character (len=1), parameter  :: perioddelim   = "."
 
   !> ASCII Codes
-  character (len=1), parameter :: newline     = char(10)
-  character (len=1), parameter :: cr          = char(13)
-  character (len=1), parameter :: esc         = char(27)
-  character (len=1), parameter :: NULL        = char(0)
+  character (len=1), parameter  :: newline     = char(10)
+  character (len=1), parameter  :: cr          = char(13)
+  character (len=1), parameter  :: esc         = char(27)
+  character (len=1), parameter  :: NULL        = char(0)
+
+  !> This sets up a graceful fail
+  logical                       :: graceful   = .false.
 
   !> Resize Array interface
   interface resize_array 
@@ -65,17 +69,17 @@ contains
                 ! print "(A,I10)", "I=", i
                 temp_str = str(1:delimpos(i)-1)
                 ! print "(A, I10, A, A)", "I=", i, " ", temp_str
-                array(i) = str2int(temp_str)
+                array(i) = string_to_integer32(temp_str)
             else if (i <= delimcount) then
                 ! print "(A,I10)", "I=", i
                 temp_str = str(delimpos(i-1)+1:delimpos(i)-1)
                 ! print "(A, I10, A, A)", "I=", i, " ", temp_str
-                array(i) = str2int(temp_str)
+                array(i) = string_to_integer32(temp_str)
             else 
                 ! print "(A,I10)", "I=", i
                 temp_str = str(delimpos(delimcount)+1:length)
                 ! print "(A, I10, A, A)", "I=", i, " ", temp_str
-                array(i) = str2int(temp_str)
+                array(i) = string_to_integer32(temp_str)
             end if
         end do
     end if
@@ -145,17 +149,50 @@ contains
 
   end subroutine
 
-  !> Converts a string to an integer otherwise return a wildly absurd negative number.
+  !> Converts a string to an integer otherwise it bombs out.
+  !> Return a wildly absurd negative number if set to gracefully fail.
   !> Unless that is what they are looking for - oops!
-  function str2int(str) result(i)
-    character (len=32), intent(in)  :: str
-    integer                         :: i, ioerr
+  !> Plausible error codes are 5010 and 0.
+  function string_to_integer32(str) result(i)
+    character (*), intent(in)   :: str
+    integer(int32)                    :: i
+    integer                           :: ioerr
 
     read (str, '(I10)', iostat=ioerr) i
+    
+    if (ioerr .ne. 0) then
+      if (graceful) then
+        i = -huge(i)
+      else 
+        print "(A,I10)", "Failed copying INTEGER, ERROR:", ioerr
+        print "(A)", "String passed:"
+        print "(A)", str 
+        call exit
+      end if 
+    end if
+  end function string_to_integer32
+
+  !> Converts a string to an integer otherwise it bombs out.
+  !> Return a wildly absurd negative number if set to gracefully fail.
+  !> Unless that is what they are looking for - oops! 
+  !> Plausible error codes are 5010 and 0.
+  function string_to_integer64(str) result(i)
+    character (*), intent(in)   :: str
+    integer(int64)                    :: i
+    integer                           :: ioerr
+
+    read (str, '(I19)', iostat=ioerr) i
 
     if (ioerr .ne. 0) then
+      if (graceful) then
         i = -huge(i)
+      else 
+        print "(A,I10)", "Failed copying INTEGER, ERROR:", ioerr
+        print "(A)", "String passed:"
+        print "(A)", str 
+        call exit
+      end if 
     end if
-  end function str2int
+  end function string_to_integer64
   
 end module stringmodlib

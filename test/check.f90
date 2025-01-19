@@ -5,6 +5,9 @@ implicit none
     integer, allocatable :: a(:)
     character(len=32), allocatable :: input(:) 
     character(len=32), allocatable :: output (:)
+    integer :: b;
+    integer(int64) :: b64 
+    character(len=32) :: bstr = "123"
 
     a = string_to_int_array("1,2,3,4,1,2,3,4",",")
     print *, a
@@ -32,4 +35,7 @@ implicit none
     output(5) = "Six"
     
     print *, output
+
+    b64  = string_to_integer64("4342223333a")
+    print *, b64
 end program check
