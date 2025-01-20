@@ -5,6 +5,7 @@ module stringmodlib
 
   public :: string_to_int_array, resize_array, &
             string_to_integer32, string_to_integer64, &
+            string_contains, string_location, &
             cr, newline, esc, NULL
             
 
@@ -194,5 +195,51 @@ contains
       end if 
     end if
   end function string_to_integer64
+
+  !> Function to return if a string contains a pattern
+  function string_contains(str, pattern) result(r)
+    character (*), intent(in)   :: str, pattern
+    logical                     :: r 
+    integer                     :: s_length, p_length, i 
+    
+    s_length = len(str)
+    p_length = len(pattern)
+    r = .false.
+
+    do i=1, (s_length-p_length) + 1
+      if(str(i:i+p_length-1) .eq. pattern) then
+        r = .true.
+        return
+      end if
+    end do
+  end function
+
+  !> Function to return the location of a search pattern
+  function string_location(str, pattern) result(loc)
+    character (*), intent(in)   :: str, pattern
+    integer, allocatable        :: loc (:)
+    integer                     :: s_length, p_length, i, count
+
+    count = 0
+    allocate(loc(count))
+    s_length = len(str)
+    p_length = len(pattern)
+
+    if (p_length .le. s_length) then
+      do i =1, (s_length-p_length) + 1
+        if(str(i:i+p_length-1) .eq. pattern) then
+          count = count + 1
+          call resize_int_array(loc, count)
+          loc(count) = i
+        end if
+      end do
+    else
+      print "(A)", "Pattern is larger or the same size as the string being searched"
+      print "(A)", "STRING:"
+      print "(A)", str
+      print "(A)", "PATTERN:"
+      print "(A)", pattern
+    end if
+  end function
   
 end module stringmodlib

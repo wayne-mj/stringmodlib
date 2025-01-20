@@ -8,6 +8,7 @@ implicit none
     integer :: b;
     integer(int64) :: b64 
     character(len=32) :: bstr = "123"
+    integer, allocatable :: c(:)
 
     a = string_to_int_array("1,2,3,4,1,2,3,4",",")
     print *, a
@@ -36,6 +37,13 @@ implicit none
     
     print *, output
 
-    b64  = string_to_integer64("4342223333a")
+    b64  = string_to_integer64("4342223333")
     print *, b64
+
+    print *, string_contains("Hello World", "w")
+    print *, string_contains("Hello World", "o W")
+    print *, string_contains("Hello World", "World")
+
+    c= string_location("Hello World", "l")
+    print *, c
 end program check
