@@ -205,13 +205,21 @@ contains
     s_length = len(str)
     p_length = len(pattern)
     r = .false.
-
-    do i=1, (s_length-p_length) + 1
-      if(str(i:i+p_length-1) .eq. pattern) then
-        r = .true.
-        return
-      end if
-    end do
+    
+    if (p_length .le. s_length) then
+      do i=1, (s_length-p_length) + 1
+        if(str(i:i+p_length-1) .eq. pattern) then
+          r = .true.
+          return
+        end if
+      end do
+    else
+      print "(A)", "Pattern is larger or the same size as the string being searched"
+      print "(A)", "STRING:"
+      print "(A)", str
+      print "(A)", "PATTERN:"
+      print "(A)", pattern
+    end if
   end function
 
   !> Function to return the location of a search pattern
